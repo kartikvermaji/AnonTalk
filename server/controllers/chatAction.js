@@ -38,58 +38,68 @@ const partnerHints = [
 
 const Hint = getRandomString(partnerHints);
 
-
-export const handleStop = async (ctx,bot) => {
-    const telegramId = ctx.from.id;
-    let user = await USERS.findOne({ telegramId });
-    if (!user) {
-      return ctx.reply("Please use /start to register first.");
-    }
-    if (user.chatPartner) {
+export const handleStop = async (ctx, bot) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+      return ctx.reply("Oops! Looks like you haven't registered yet. Use /start to begin. 🚀");
+  }
+  if (user.chatPartner) {
       const partner = await USERS.findById(user.chatPartner);
       await bot.telegram.sendMessage(
-        partner.telegramId,
-        "Your Partner Left the chat 😥\n\n/next-find a new partner\n/stop-stop the bot \n\nhttps://t.me/talking_anonmyousbot"
+          partner.telegramId,
+          "Your Partner left the chat 😥. Looks like you're flying solo now! 🕶️💔\n\nUse /next to find a new chat partner, or /stop to exit. See you soon! ✌️\n\n@talking_anonmyousbot"
       );
       partner.chatPartner = null;
       partner.isSearching = false;
       await partner.save();
-    }
-    user.chatPartner = null;
-    user.isSearching = false;
-    await user.save();
-    return ctx.reply(
-      "You have left the chat 😥\n\n/next-find a new partner\n/stop-stop the bot \n\n@talking_anonmyousbot"
-    );
-  };
+  }
+  user.chatPartner = null;
+  user.isSearching = false;
+  await user.save();
+  return ctx.reply(
+      "You’ve left the chat 😥. Catch you next time! ✌️\n\nWant to chat again? Use /next to find someone new! 💬\n\nOr type /stop to exit. 🚪"
+  );
+};
+
 export const handleNext = async (ctx, bot) => {
     const telegramId = ctx.from.id;
     let user = await USERS.findOne({ telegramId });
     if (!user) {
-      return ctx.reply("Please use /start to register first.");
+        return ctx.reply("Oops! You haven't registered yet. Use /start to get started. 🚀");
     }
 
     if (user.chatPartner) {
-      const partner = await USERS.findById(user.chatPartner);
-      await bot.telegram.sendMessage(
-        partner.telegramId,
-        "Your Partner Left the chat 😥\n\n/next-find a new partner\n/stop-stop the bot \n\n@talking_anonmyousbot"
-      );
-      partner.chatPartner = null;
-      partner.isSearching = false;
-      await partner.save();
-      ctx.reply("You have left the chat.");
+        const partner = await USERS.findById(user.chatPartner);
+        await bot.telegram.sendMessage(
+            partner.telegramId,
+            "Your Partner left the chat 😥. Time to meet someone new! 🌍💬\n\nUse /next to find a new chat buddy or /stop to leave. Catch you later! 👋\n\n@talking_anonmyousbot"
+        );
+        partner.chatPartner = null;
+        partner.isSearching = false;
+        await partner.save();
+        ctx.reply("You’ve left the chat 😥. Ready to try again? 🕶️");
     }
+
     user.isSearching = true;
     user.chatPartner = null;
     await user.save();
     const partnerTelegramId = await findMatch(user._id);
+    
     if (partnerTelegramId) {
-      await ctx.reply(`Found Someone 😉!\n\n/next-find a new partner\n/stop-stop the bot\n\n ${getRandomString(partnerHints)}`);
-      await bot.telegram.sendMessage(partnerTelegramId, `Found Someone 😉!\n\nnext-find a new partner\n/stop-stop the bot\n\n ${getRandomString(partnerHints)}`);
+        const hint = getRandomString(partnerHints);
+        await ctx.reply(
+            `🔥 A match has been found! 🔥\n\nGet ready to chat with your new partner! 🎉\n\n${hint}\n\nUse /next to find another partner or /stop to end the conversation. 👋`
+        );
+        await bot.telegram.sendMessage(
+            partnerTelegramId,
+            `🔥 New partner found! 🔥\n\nLet’s see where this conversation goes! 🎉\n\n${hint}\n\nUse /next to find another partner or /stop to end. 👋`
+        );
     } else {
-      await ctx.reply("🔍 Searching for a random partner...");
+        await ctx.reply("🔍 Still searching for someone... Hold tight! 🤞");
     }
-  };
+};
+
+
 
   

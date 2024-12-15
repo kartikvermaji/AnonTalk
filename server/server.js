@@ -6,17 +6,21 @@ import bot from './controllers/botcontroller.js';
 dotenv.config(); 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// MongoDB connection
+   
+// MongoDB connection     
 mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 30000 // 30 seconds timeout
+  })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
-
+ 
 // Telegraf bot setup
 bot.launch();
 
-// Start server
+// Start server   
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
