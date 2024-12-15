@@ -18,8 +18,12 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
  
 // Telegraf bot setup
-bot.launch();
 
+
+app.use('/',(req,res)=>{
+  res.json('SERVER RUNNING')   
+  
+})
 // Start server   
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
