@@ -1,49 +1,148 @@
-import { Telegraf } from 'telegraf';
+import { Telegraf,Markup } from 'telegraf';
 import dotenv from 'dotenv';
 import USERS from '../models/user.js'; 
 import findMatch from '../utils/matchUser.js'; 
+import {handleNext, handleStop }from "./chatAction.js";
 dotenv.config(); 
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// const usersState = {
-//       telegramId:null,
-//       gender: "other",
-//       partnerGender:"any",
-//       isSearching:false,
-//       chatPartner:null,
-//       interests:[],
-//       rating:0,
-//       ratingsCount:0,
-// }
-// const partnerState = {
-//     telegramId:null,
-//     gender: "other",
-//     partnerGender:"any",
-//     isSearching:false,
-//     chatPartner:null,
-//     interests:[],
-//     rating:0,
-//     ratingsCount:0,
-// }
+//BUTTONS////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//BUTTONS///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-// Start command
-bot.start(async (ctx) => {
-  const telegramId = ctx.from.id;
-
-  let user = await USERS.findOne({ telegramId });
-  if (!user) {
-    user = new USERS({ telegramId });
-    await user.save();
-  }
-//   usersState=user
-
-  ctx.reply("Welcome to Anonymous Chat Bot! \nUse: \n/next to find a chat partner \n/stop to stop chatting \n/profile to update and view profile");
+bot.hears("Stop Chat", async (ctx) => {
+  await handleStop(ctx, bot);
 });
 
-// Help command
+bot.hears("Find Next Partner", async (ctx) => {
+  await handleNext(ctx, bot);
+})
+          
+  
+// Action for Male
+bot.action("set_male", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.gender = "Male";
+  await user.save();
+  ctx.reply("Gender set to Male 🧔‍♂️");
+});
+// Action for Female
+bot.action("set_female", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.gender = "Female";
+  await user.save();
+  ctx.reply("Gender set to Female 👩‍🦰");
+});
+// Action for Other
+bot.action("set_other", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.gender = "Other";
+  await user.save();
+  ctx.reply("Gender set to Other 🌈");
+});
+
+
+bot.action("set_book", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.interests = "Books 📚";
+  await user.save();
+  ctx.reply("Interest set to Books 📚")
+});
+bot.action("set_anime", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.interests = "Anime 😍";
+  await user.save();
+  ctx.reply("Interest set to Anime 😍")
+});
+bot.action("set_movie", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.interests = "Movies 📺";
+  await user.save();
+  ctx.reply("Interest set to Books 📚")
+});
+bot.action("set_game", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.interests = "Games 🎳";
+  await user.save();
+  ctx.reply("Interest set to Games 🎳")
+});
+bot.action("set_talk", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.interests = "Talking 🗣️";
+  await user.save();
+  ctx.reply("Interest set to Talking 🗣️")
+});
+bot.action("set_drawing", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
+  }
+  user.interests = "Art/Crafts 🎨";
+  await user.save();
+  ctx.reply("Interest set to Art/Crafts 🎨")
+});
+
+//COMMANDS////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//COMMANDS///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//START THE CHAT
+bot.start(async (ctx) => {
+  const telegramId = ctx.from.id;
+  const username = ctx.from.username;
+  let user = await USERS.findOne({ telegramId});
+  if (!user) {
+    user = new USERS({ telegramId,username});
+  //   ctx.reply(
+  //   "Select your Gender",
+  //   Markup.inlineKeyboard([
+  //     [Markup.button.callback("Male 🧔‍♂️", "set_male")],
+  //     [Markup.button.callback("Female 👩‍🦰", "set_female")],
+  //     [Markup.button.callback("Other 🌈", "set_other")],
+  //   ])
+  // );
+    await user.save();
+  }
+    await ctx.reply(
+    "Welcome to Anonymous Chat Bot! \nUse: \n/next to find a chat partner \n/stop to stop chatting \n/profile to update and view profile",
+    Markup.keyboard(["Find Next Partner", "Stop Chat"])
+      .resize()
+  );
+  
+});
+// HELP THE CHAT
 bot.command("help", (ctx) => {
   ctx.reply(`
 Available commands:
@@ -53,89 +152,75 @@ Available commands:
 /profile - Update your preferences
 `);
 });
-
-// Profile command
+// PROFILE
 bot.command("profile", async (ctx) => {
   const telegramId = ctx.from.id;
-
   let user = await USERS.findOne({ telegramId });
   if (!user) {
     return ctx.reply("Please use /start to register first.");
   }
-
   ctx.reply("Update your profile: /set_gender, /set_partner_gender.");
 });
-
-// Gender setting commands
+// SET GENDER Command
 bot.command("set_gender", async (ctx) => {
-  const [_, gender] = ctx.message.text.split(" ");
-
-  if (!["male", "female", "other"].includes(gender)) {
-    return ctx.reply("Invalid gender. Please use 'male', 'female', or 'other'.");
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
+  if (!user) {
+    return ctx.reply("Please use /start to register first.");
   }
-
-  const user = await USERS.findOne({ telegramId: ctx.from.id });
-  user.gender = gender;
-  await user.save();
-
-  ctx.reply("Your gender has been updated.");
+  ctx.reply(
+    "Select your Gender",
+    Markup.inlineKeyboard([
+      [Markup.button.callback("Male 🧔‍♂️", "set_male")],
+      [Markup.button.callback("Female 👩‍🦰", "set_female")],
+      [Markup.button.callback("Other 🌈", "set_other")],
+    ])
+  );
 });
 
-bot.command("set_partner_gender", async (ctx) => {
-  const [_, partnerGender] = ctx.message.text.split(" ");
+//SET PARTNER GENDER
+// bot.command("set_partner_gender", async (ctx) => {
+//   const [_, partnerGender] = ctx.message.text.split(" ");
 
-  if (!["male", "female", "any"].includes(partnerGender)) {
-    return ctx.reply("Invalid preference. Please use 'male', 'female', or 'any'.");
-  }
+//   if (!["male", "female", "any"].includes(partnerGender)) {
+//     return ctx.reply("Invalid preference. Please use 'male', 'female', or 'any'.");
+//   }
 
-  const user = await USERS.findOne({ telegramId: ctx.from.id });
-  user.partnerGender = partnerGender;
-  await user.save();
+//   const user = await USERS.findOne({ telegramId: ctx.from.id });
+//   user.partnerGender = partnerGender;
+//   await user.save();
 
-  ctx.reply("Your partner preference has been updated.");
-});
+//   ctx.reply("Your partner preference has been updated.");
+// });
 
-// Match command
 bot.command("next", async (ctx) => {
-  const user = await USERS.findOne({ telegramId: ctx.from.id });
-  if (!user) {
-    return ctx.reply("Please use /start to register first.");
-  }
-
-  user.isSearching = true;
-  user.chatPartner = null;
-  await user.save();
-
-  const partnerTelegramId = await findMatch(user._id);
-  if (partnerTelegramId) {
-    ctx.reply("You are now connected to a partner. Say hi!");
-    bot.telegram.sendMessage(partnerTelegramId, "You are now connected to a partner. Say hi!");
-  } else {
-    ctx.reply("No partners found. Please wait...");
-  }
+  await handleNext(ctx, bot);
 });
 
-// Stop command
 bot.command("stop", async (ctx) => {
-  const user = await USERS.findOne({ telegramId: ctx.from.id });
+  await handleStop(ctx, bot);
+});
+// UPDATE INTERESTS
+bot.command("set_interests", async (ctx) => {
+  const telegramId = ctx.from.id;
+  let user = await USERS.findOne({ telegramId });
   if (!user) {
     return ctx.reply("Please use /start to register first.");
   }
-
-  if (user.chatPartner) {
-    const partner = await USERS.findById(user.chatPartner);
-    partner.chatPartner = null;
-    partner.isSearching = true;
-    await partner.save();
-  }
-
-  user.chatPartner = null;
-  user.isSearching = false;
-  await user.save();
-
-  ctx.reply("You have left the chat.");
+  ctx.reply(
+    "Select your Interests",
+    Markup.inlineKeyboard([
+      [Markup.button.callback("Books 📚", "set_book")],
+      [Markup.button.callback("Anime 😍", "set_anime")],
+      [Markup.button.callback("Movies 📺", "set_movie")],
+      [Markup.button.callback("Games 🎳", "set_game")],
+      [Markup.button.callback("Talking 🗣️", "set_talk")],
+      [Markup.button.callback("Art/Crafts 🎨", "set_drawing")],
+    ])
+  );
 });
 
+//CHATTING
 bot.on("message", async (ctx) => {
   const user = await USERS.findOne({ telegramId: ctx.from.id });
 

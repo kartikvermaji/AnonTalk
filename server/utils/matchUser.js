@@ -7,7 +7,7 @@ const findMatch = async (userId) => {
   // Find a partner based on preferences
   const partner = await USERS.findOne({
     isSearching: true,
-    gender: user.partnerGender === "any" ? { $in: ["male", "female", "other"] } : user.partnerGender,
+    // gender: user.partnerGender === "any" ? { $in: ["male", "female", "other"] } : user.partnerGender,
     partnerGender: { $in: ["any", user.gender] },
     _id: { $ne: userId },
   });
