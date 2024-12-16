@@ -19,7 +19,7 @@ mongoose
  
 // Telegraf bot setup
 
-bot.launch();
+
 
 app.use('/',(req,res)=>{
   res.json('SERVER RUNNING')   
