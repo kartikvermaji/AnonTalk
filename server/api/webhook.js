@@ -1,26 +1,34 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
-import axios from 'axios';
-import bodyParser from 'body-parser';
 dotenv.config();
+import bot from '../controllers/botcontroller.js';
+// const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
-// Define webhook endpoint
-export default async function handler(req, res) {
+// Webhook handler function
+export default async function webhookHandler(req, res) {
   if (req.method === 'POST') {
-    // Handle the incoming updates from Telegram
-    bot.handleUpdate(req.body); // Pass the request body to Telegraf's handler
-    return res.status(200).send('OK');
+    try {
+      // console.log('Incoming update:', req.body); // Log updates for debugging
+      const webhookInfo = await bot.telegram.getWebhookInfo();
+      // console.log(webhookInfo);
+      await bot.handleUpdate(req.body);
+      res.status(200).send('OK');
+    } catch (error) {
+      console.error('Error handling update:', error);
+      res.status(500).send('Internal Server Error');
+    }
   } else {
     res.status(405).send('Method Not Allowed');
   }
 }
 
-// Set the webhook
-const setWebhook = async () => {
-  const webhookUrl = `https://${process.env.VERCEL_URL}/api/webhook`; // Use the Vercel URL here
-  await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
-};
-
-setWebhook();
+// Setup webhook on bot initialization
+(async () => {
+  const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
+  try {
+    await bot.telegram.setWebhook(webhookUrl);
+    console.log(`Webhook set successfully: ${webhookUrl}`);
+  } catch (error) {
+    console.error('Error setting webhook:', error);
+  }
+})();

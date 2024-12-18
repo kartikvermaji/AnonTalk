@@ -3,22 +3,68 @@ import dotenv from 'dotenv';
 import USERS from '../models/user.js'; 
 import findMatch from '../utils/matchUser.js'; 
 import { handleNext, handleStop } from './chatAction.js';
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
 dotenv.config();
+// Webhook URL
+const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+// Set the webhook for the bot
+async function setWebhook() {
+  const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
+  try {
+    await bot.telegram.setWebhook(webhookUrl);
+    console.log(`Webhook set successfully: ${webhookUrl}`);
+  } catch (error) {
+    if (error.response && error.response.error_code === 429) {
+      const retryAfter = error.response.parameters.retry_after;
+      console.log(`Too many requests. Retrying after ${retryAfter} seconds...`);
+      setTimeout(setWebhook, retryAfter * 1000); // Retry after the delay
+    } else {
+      console.error('Error setting webhook:', error);
+    }
+  }
+}
+
+// Call the setWebhook function to set up the webhook
+setWebhook();
 
 // Helper function to remove user when blocked
 const handleBlockedUser = async (ctx, error) => {
   if (error.response && error.response.error_code === 403) {
-    console.log(`User ${ctx.from.id} has blocked the bot.`);
-    // Remove the user from the database
-    await USERS.deleteOne({ telegramId: ctx.from.id });
-    console.log(`User ${ctx.from.id} has been removed from the database.`);
+    // The current user (ctx) is the partner of the blocker
+    const currentUser = await USERS.findOne({ telegramId: ctx.from.id });
+    if (!currentUser || !currentUser.chatPartner) {
+      console.error("Error: Partner not found or chatPartner is null.");
+      return;
+    }
+
+    // Find the blocker (currentUser's chatPartner)
+    const blocker = await USERS.findById(currentUser.chatPartner);
+    if (blocker) {
+      console.log(`User ${blocker.username} (ID: ${blocker.telegramId}) has blocked the bot.`);
+
+      // Delete the blocker from the database
+      await USERS.deleteOne({ telegramId: blocker.telegramId });
+      console.log(`User ${blocker.username} (ID: ${blocker.telegramId}) has been deleted from the database.`);
+
+      // Update the current user (remove their chatPartner)
+      currentUser.chatPartner = null;
+      await currentUser.save();
+
+      // Notify the current user
+      await bot.telegram.sendMessage(
+        currentUser.telegramId,
+        "Your partner has left the chat.\nUse /next to find a new partner. 😊"
+      );
+    } else {
+      console.error("Error: Blocker user not found in the database.");
+    }
   } else {
-    console.error('Unexpected error:', error);
+    console.error("Unexpected error:", error);
   }
 };
+
 
 // Handle when the user clicks the 'Find Next Partner' button
 bot.hears('Find Next Partner', async (ctx) => {
@@ -172,6 +218,22 @@ bot.action("set_interest", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
+bot.command("set_interest", async (ctx) => {
+  try {
+    await ctx.answerCbQuery();
+    ctx.reply(
+      "What interests do you have? 👇",
+      Markup.inlineKeyboard([
+        [Markup.button.callback("Books 📚", "set_book"), Markup.button.callback("Anime 😍", "set_anime")],
+        [Markup.button.callback("Movies 📺", "set_movie"), Markup.button.callback("Games 🎳", "set_game")],
+        [Markup.button.callback("Talking 🗣️", "set_talk"), Markup.button.callback("Art/Crafts 🎨", "set_drawing")],
+      ])
+    );
+  } catch (error) {
+    await handleBlockedUser(ctx, error);
+  }
+});
+
 
 // Chat Actions with Buttons
 bot.action("to_next", async (ctx) => {
@@ -231,7 +293,21 @@ bot.start(async (ctx) => {
 bot.command("help", (ctx) => {
   ctx.reply("This bot allows you to connect with random users. Use /next to find someone new or /stop to end a chat.");
 });
+bot.command("next", async(ctx) => {
+  try {
+    await handleNext(ctx, bot);  // This is where your /next logic goes
+  } catch (error) {
+    await handleBlockedUser(ctx, error);
+  }
+});
 
+bot.command("stop", async(ctx) => {
+  try {
+    await handleStop(ctx, bot);  // This is where your /next logic goes
+  } catch (error) {
+    await handleBlockedUser(ctx, error);
+  }
+});
 // Message event handling (forwarding messages to chat partner)
 bot.on("message", async (ctx) => {
   try {
@@ -263,6 +339,11 @@ bot.on("message", async (ctx) => {
 });
 
 // Launch the bot
-bot.launch();
+// try {
+//   bot.launch();
+//   console.log('Bot launched successfully!');
+// } catch (error) {
+//   console.error('Error launching bot:', error);
+// }
 
 export default bot; 
