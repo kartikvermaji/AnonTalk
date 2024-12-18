@@ -22,7 +22,7 @@ Before running the bot, you'll need:
 
 ### Step 1: Clone the Repository
 
-```bash
+
 git clone https://github.com/your-username/anonTalk-bot.git
 cd anonTalk-bot
 Step 2: Install Dependencies
