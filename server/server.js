@@ -1,8 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
-// 
- 
+
 import webhookHandler from './api/webhook.js';
 
 dotenv.config();
@@ -30,9 +29,11 @@ app.get('/', (req, res) => {
   res.json('SERVER RUNNING');
 });
     
-  
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
