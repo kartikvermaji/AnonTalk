@@ -24,7 +24,7 @@ export default async function webhookHandler(req, res) {
 
 // Setup webhook on bot initialization
 (async () => {
-  const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
+  const webhookUrl = `${process.env.VERCEL_URL}api/webhook`;
   try {
     await bot.telegram.setWebhook(webhookUrl);
     console.log(`Webhook set successfully: ${webhookUrl}`);
