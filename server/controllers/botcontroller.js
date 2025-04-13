@@ -34,7 +34,11 @@ const handleBlockedUser = async (ctx, error) => {
   if (error.response && error.response.error_code === 403) {
     // The current user (ctx) is the partner of the blocker
     const currentUser = await USERS.findOne({ telegramId: ctx.from.id });
-    if (!currentUser || !currentUser.chatPartner) {
+    if (!currentUser) {
+      console.error("Error: currentuser not found or chatPartner is null.");
+      return;
+    }
+    if(!currentUser.chatPartner){
       console.error("Error: Partner not found or chatPartner is null.");
       return;
     }
@@ -338,13 +342,6 @@ bot.on("message", async (ctx) => {
   }
 });
 
-// Launch the bot
-// try {
-//   bot.launch();
-//   console.log('Bot launched successfully!');
-// } catch (error) {
-//   console.error('Error launching bot:', error);
-// }
 // process.once("SIGINT", () => bot.stop("SIGINT"));
 // process.once("SIGTERM", () => bot.stop("SIGTERM"));
 export default bot; 

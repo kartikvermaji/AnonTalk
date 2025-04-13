@@ -22,13 +22,13 @@ export default async function webhookHandler(req, res) {
   }
 }
 
-// Setup webhook on bot initialization
-(async () => {
-  const webhookUrl = `${process.env.VERCEL_URL}api/webhook`;
-  try {
-    await bot.telegram.setWebhook(webhookUrl);
-    console.log(`Webhook set successfully: ${webhookUrl}`);
-  } catch (error) {
-    console.error('Error setting webhook:', error);
-  }
-})();
+// // Setup webhook on bot initialization
+// (async () => {
+//   const webhookUrl = `${process.env.VERCEL_URL}api/webhook`;
+//   try {
+//     await bot.telegram.setWebhook(webhookUrl);
+//     console.log(`Webhook set successfully: ${webhookUrl}`);
+//   } catch (error) {
+//     console.error('Error setting webhook:', error);
+//   }
+// })();
