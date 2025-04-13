@@ -1,0 +1,14 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "api/webhook.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "env": {
+      "MONGO_URI": "@your-mongo-uri",
+      "TELEGRAM_TOKEN": "@your-telegram-token"
+    }
+  }
+  
