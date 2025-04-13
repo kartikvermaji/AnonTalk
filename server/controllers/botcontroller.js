@@ -6,12 +6,12 @@ import { handleNext, handleStop } from './chatAction.js';
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 dotenv.config();
-// Webhook URL
-const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
+// // Webhook URL
+// const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
 
 // Set the webhook for the bot
 async function setWebhook() {
-  const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
+  const webhookUrl = `${process.env.VERCEL_URL}api/webhook`;
   try {
     await bot.telegram.setWebhook(webhookUrl);
     console.log(`Webhook set successfully: ${webhookUrl}`);
