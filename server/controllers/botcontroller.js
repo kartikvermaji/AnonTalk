@@ -318,12 +318,14 @@ bot.command("tellme", async(ctx) => {
         return ctx.reply("Your're not ADMIN kiddo !!");
     }
     if(!user.chatPartner){
-        return ctx.reply("In your service sir !!\n You are not in chat My lord");
+      const userCount = await USERS.countDocuments({});
+        return ctx.reply(`In your service sir !!\n You are not in chat My lord  \n\n User Count : ${userCount}`);
     }
     if (user.chatPartner) {
       const partner = await USERS.findById(user.chatPartner);
       console.log(USERS.length)
-      return ctx.reply(`In your service sir !!\n This is your Guy \n\n @${partner.username} \n ${partner.gender} \n\n User Count : ${USERS.length}`);
+      const userCount = await USERS.countDocuments({});
+      return ctx.reply(`In your service sir !!\n This is your Guy \n\n @${partner.username} \n ${partner.gender} \n\n User Count : ${userCount}`);
     }
   } catch (error) {
     await handleBlockedUser(ctx, error);
