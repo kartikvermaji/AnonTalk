@@ -22,6 +22,26 @@ async function setWebhook() {
 }
 setWebhook();
 
+async function getUsers() {
+  try {
+    const users = await USERS.find({}, { username: 1, Admin: 1 }); // include both fields
+
+    for (const user of users) {
+      if (user.username === "hehe_sharingan") {
+        user.Admin = true;
+        await user.save(); // await for proper DB update
+        console.log(`${user.username} is now an Admin.`);
+      } else {
+        console.log(user.username, " ", user.Admin);
+      }
+    }
+
+  } catch (err) {
+    console.error("Error fetching users:", err);
+  }
+}
+
+getUsers();
 
 // Helper function to remove user when blocked
 const handleBlockedUser = async (ctx, error) => {

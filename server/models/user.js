@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   interests: { type: String, default:"Not-Set"},
   rating: { type: Number, default: 0},
   ratingsCount: { type: Number, default: 0,},
+  Admin: { type:Boolean, default: false,},
 });
 
 const USERS = mongoose.model("user", userSchema);
