@@ -322,6 +322,7 @@ bot.command("tellme", async(ctx) => {
     }
     if (user.chatPartner) {
       const partner = await USERS.findById(user.chatPartner);
+      console.log(USERS.length)
       return ctx.reply(`In your service sir !!\n This is your Guy \n\n @${partner.username} \n ${partner.gender} \n\n User Count : ${USERS.length}`);
     }
   } catch (error) {
