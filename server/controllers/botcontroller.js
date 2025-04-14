@@ -1,15 +1,10 @@
 import { Telegraf, Markup } from 'telegraf';
 import dotenv from 'dotenv';
 import USERS from '../models/user.js'; 
-import findMatch from '../utils/matchUser.js'; 
 import { handleNext, handleStop } from './chatAction.js';
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 dotenv.config();
-// // Webhook URL
-// const webhookUrl = `${process.env.VERCEL_URL}/api/webhook`;
-
-// Set the webhook for the bot
 async function setWebhook() {
   const webhookUrl = `${process.env.VERCEL_URL}api/webhook`;
   try {
@@ -25,9 +20,8 @@ async function setWebhook() {
     }
   }
 }
-
-// Call the setWebhook function to set up the webhook
 setWebhook();
+
 
 // Helper function to remove user when blocked
 const handleBlockedUser = async (ctx, error) => {
@@ -68,7 +62,6 @@ const handleBlockedUser = async (ctx, error) => {
     console.error("Unexpected error:", error);
   }
 };
-
 
 // Handle when the user clicks the 'Find Next Partner' button
 bot.hears('Find Next Partner', async (ctx) => {
@@ -124,7 +117,6 @@ bot.action("set_male", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_female", async (ctx) => {
   try {
     await updateUserAttribute(ctx, "gender", "Female", "So, you're a lady! 💁‍♀️ Let's get those girl chats going! 👩‍🦰", "You're all set, queen! Ready to chat with someone new?");
@@ -132,7 +124,6 @@ bot.action("set_female", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_other", async (ctx) => {
   try {
     await updateUserAttribute(ctx, "gender", "Other", "Ah, you're a mystery! 🔮 Let's keep it intriguing 🌈", "You're unique and amazing! Let's find your next chat buddy! 🦄");
@@ -149,7 +140,6 @@ bot.action("set_book", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_anime", async (ctx) => {
   try {
     await updateUserAttribute(ctx, "interests", "Anime 😍", "Anime lover! 🍿 Let's talk about your favorite characters! 🦸‍♂️", "You are ready to talk anime! 🌟");
@@ -157,7 +147,6 @@ bot.action("set_anime", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_movie", async (ctx) => {
   try {
     await updateUserAttribute(ctx, "interests", "Movies 📺", "A movie buff, huh? 🎬 Ready for the popcorn chats? 🍿", "You're all set for movie night talk! 🍿");
@@ -165,7 +154,6 @@ bot.action("set_movie", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_game", async (ctx) => {
   try {
     await updateUserAttribute(ctx, "interests", "Games 🎳", "Game on! 🎮 Who's ready for a gaming session? 🕹️", "You’re all set to talk games! 🎮");
@@ -173,7 +161,6 @@ bot.action("set_game", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_talk", async (ctx) => {
   try {
     await updateUserAttribute(ctx, "interests", "Talking 🗣️", "You love to chat! Let's talk about everything and nothing 🗣️", "You're all set to talk! Let's start a conversation 💬");
@@ -181,7 +168,6 @@ bot.action("set_talk", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_drawing", async (ctx) => {
   try {
     await updateUserAttribute(ctx, "interests", "Art/Crafts 🎨", "Art lover alert! 🎨 Ready to sketch some fun convos? 🖌️", "You're all set to talk art! 🎨");
@@ -206,7 +192,6 @@ bot.action("set_gender", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("set_interest", async (ctx) => {
   try {
     await ctx.answerCbQuery();
@@ -238,7 +223,6 @@ bot.command("set_interest", async (ctx) => {
   }
 });
 
-
 // Chat Actions with Buttons
 bot.action("to_next", async (ctx) => {
   try {
@@ -247,7 +231,6 @@ bot.action("to_next", async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.action("to_stop", async (ctx) => {
   try {
     await handleStop(ctx, bot);
@@ -275,14 +258,15 @@ bot.start(async (ctx) => {
         ])
       );
 
-      ctx.reply(
-        "Now, let's choose your interests! 🎉",
-        Markup.inlineKeyboard([
-          [Markup.button.callback("Books 📚", "set_book"), Markup.button.callback("Anime 😍", "set_anime")],
-          [Markup.button.callback("Movies 📺", "set_movie"), Markup.button.callback("Games 🎳", "set_game")],
-          [Markup.button.callback("Talking 🗣️", "set_talk"), Markup.button.callback("Art/Crafts 🎨", "set_drawing")],
-        ])
-      );
+    //   ctx.reply(
+    //     "Now, let's choose your interests! 🎉",
+    //     Markup.inlineKeyboard([
+    //       [Markup.button.callback("Books 📚", "set_book"), Markup.button.callback("Anime 😍", "set_anime")],
+    //       [Markup.button.callback("Movies 📺", "set_movie"), Markup.button.callback("Games 🎳", "set_game")],
+    //       [Markup.button.callback("Talking 🗣️", "set_talk"), Markup.button.callback("Art/Crafts 🎨", "set_drawing")],
+    //     ])
+    //   );
+    
     } else {
       ctx.reply(
         "Welcome back to Anonymous Chat Bot! 🌟 \nUse: \n/next to find a chat partner 🧑‍🤝‍🧑 \n/stop to stop chatting 🚫 \n/profile to update your profile 📝",
@@ -293,7 +277,6 @@ bot.start(async (ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
 bot.command("help", (ctx) => {
   ctx.reply("This bot allows you to connect with random users. Use /next to find someone new or /stop to end a chat.");
 });
@@ -304,7 +287,27 @@ bot.command("next", async(ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-
+bot.command("tellme", async(ctx) => {
+  try {
+    const telegramId = ctx.from.id;
+    let user = await USERS.findOne({ telegramId });
+    if (!user) {
+        return ctx.reply("Oops! Looks like you haven't registered yet. Use /start to begin. 🚀");
+    }
+    if (!user.Admin) {
+        return;
+    }
+    if(!user.chatPartner){
+        return ctx.reply("In your service sir !!\n You are not in chat My lord");
+    }
+    if (user.chatPartner) {
+      const partner = await USERS.findById(user.chatPartner);
+      return ctx.reply(`In your service sir !!\n This is your Guy \n\n @${partner.username} \n ${partner.gender}`);
+    }
+  } catch (error) {
+    await handleBlockedUser(ctx, error);
+  }
+});
 bot.command("stop", async(ctx) => {
   try {
     await handleStop(ctx, bot);  // This is where your /next logic goes
@@ -342,6 +345,4 @@ bot.on("message", async (ctx) => {
   }
 });
 
-// process.once("SIGINT", () => bot.stop("SIGINT"));
-// process.once("SIGTERM", () => bot.stop("SIGTERM"));
 export default bot; 
