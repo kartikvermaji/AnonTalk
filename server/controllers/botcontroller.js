@@ -2,6 +2,8 @@ import { Telegraf, Markup } from 'telegraf';
 import dotenv from 'dotenv';
 import USERS from '../models/user.js'; 
 import { handleNext, handleStop } from './chatAction.js';
+import cron from 'node-cron';
+
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 dotenv.config();
@@ -21,6 +23,23 @@ async function setWebhook() {
   }
 }
 setWebhook();
+cron.schedule('48 17 * * *', async () => {
+  try {
+    const users = await USERS.find({});
+
+    for (const user of users) {
+      await bot.telegram.sendMessage(
+        user.telegramId,
+        "🌟 You might have messages waiting! Use /next to find a new chat partner and connect with someone today! 💬"
+      );
+    }
+
+    console.log("✅ Daily message sent to all users at 12 PM");
+  } catch (error) {
+    console.error("❌ Failed to send daily message:", error);
+  }
+});
+
 
 // async function getUsers() {
 //   try {
