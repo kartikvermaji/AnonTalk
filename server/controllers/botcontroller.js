@@ -295,14 +295,14 @@ bot.command("tellme", async(ctx) => {
         return ctx.reply("Oops! Looks like you haven't registered yet. Use /start to begin. 🚀");
     }
     if (!user.Admin) {
-        return;
+        return ctx.reply("Your're not ADMIN kiddo !!");
     }
     if(!user.chatPartner){
         return ctx.reply("In your service sir !!\n You are not in chat My lord");
     }
     if (user.chatPartner) {
       const partner = await USERS.findById(user.chatPartner);
-      return ctx.reply(`In your service sir !!\n This is your Guy \n\n @${partner.username} \n ${partner.gender}`);
+      return ctx.reply(`In your service sir !!\n This is your Guy \n\n @${partner.username} \n ${partner.gender} \n\n User Count : ${USERS.length}`);
     }
   } catch (error) {
     await handleBlockedUser(ctx, error);
