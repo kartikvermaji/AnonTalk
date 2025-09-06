@@ -29,3 +29,32 @@ const findMatch = async (userId) => {
 };
 
 export default findMatch;
+
+
+//  import USERS from '../models/user.js'; 
+
+// // No need to find the user again
+// const findMatch = async (user) => { // Receive the full user object
+//   // const user = await USERS.findById(userId); // DELETE this line
+
+//   const partner = await USERS.findOneAndUpdate({
+//     isSearching: true,
+//     partnerGender: { $in: ["any", user.gender] },
+//     _id: { $ne: user._id }, // Use user._id directly
+//   },{
+//     isSearching: false,
+//     chatPartner: user._id // Use user._id directly
+//   },{
+//     new: true
+//   });
+
+//   if (partner) {
+//     user.chatPartner = partner._id;
+//     user.isSearching = false;
+//     await user.save();
+//     return partner.telegramId;
+//   }
+
+//   return null;
+// };
+//  export default findMatch;

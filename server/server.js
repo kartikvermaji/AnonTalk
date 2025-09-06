@@ -21,16 +21,13 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Telegram webhook route
+
 app.post('/api/webhook', webhookHandler);
 
-// Default route
 app.get('/', (req, res) => {
   res.json('SERVER RUNNING');
 });
     
-
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

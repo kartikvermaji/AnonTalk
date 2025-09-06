@@ -1,6 +1,7 @@
 import { Telegraf, Markup } from 'telegraf';
 import dotenv from 'dotenv';
 import USERS from '../models/user.js'; 
+import MEDIA from '../models/pic.js';
 import { handleNext, handleStop } from './chatAction.js';
 import cron from 'node-cron';
 
@@ -16,13 +17,14 @@ async function setWebhook() {
     if (error.response && error.response.error_code === 429) {
       const retryAfter = error.response.parameters.retry_after;
       console.log(`Too many requests. Retrying after ${retryAfter} seconds...`);
-      setTimeout(setWebhook, retryAfter * 1000); // Retry after the delay
+      setTimeout(setWebhook, retryAfter * 1000); 
     } else {
       console.error('Error setting webhook:', error);
     }
   }
 }
 setWebhook();
+
 cron.schedule('48 17 * * *', async () => {
   try {
     const users = await USERS.find({});
@@ -41,26 +43,6 @@ cron.schedule('48 17 * * *', async () => {
 });
 
 
-// async function getUsers() {
-//   try {
-//     const users = await USERS.find({}, { username: 1, Admin: 1 }); // include both fields
-
-//     for (const user of users) {
-//       if (user.username === "hehe_sharingan") {
-//         user.Admin = true;
-//         await user.save(); // await for proper DB update
-//         console.log(`${user.username} is now an Admin.`);
-//       } else {
-//         console.log(user.username, " ", user.Admin);
-//       }
-//     }
-
-//   } catch (err) {
-//     console.error("Error fetching users:", err);
-//   }
-// }
-
-// getUsers();
 
 // Helper function to remove user when blocked
 const handleBlockedUser = async (ctx, error) => {
@@ -326,7 +308,18 @@ bot.command("next", async(ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-bot.command("tellme", async(ctx) => {
+
+bot.command("stop", async(ctx) => {
+  try {
+    await handleStop(ctx, bot);  // This is where your /next logic goes
+  } catch (error) {
+    await handleBlockedUser(ctx, error);
+  }
+});
+
+
+/////////////////ADMIN/////////////////////////////
+bot.command("susers", async(ctx) => {
   try {
     const telegramId = ctx.from.id;
     let user = await USERS.findOne({ telegramId });
@@ -350,13 +343,62 @@ bot.command("tellme", async(ctx) => {
     await handleBlockedUser(ctx, error);
   }
 });
-bot.command("stop", async(ctx) => {
+bot.command("smedia", async (ctx) => {
   try {
-    await handleStop(ctx, bot);  // This is where your /next logic goes
-  } catch (error) {
-    await handleBlockedUser(ctx, error);
+    const telegramId = ctx.from.id;
+    let user = await USERS.findOne({ telegramId });
+    if (!user) {
+      return ctx.reply("Oops! Looks like you haven't registered yet. Use /start to begin. 🚀");
+    }
+    if (!user.Admin) {
+      return ctx.reply("You're not ADMIN kiddo !!");
+    }
+
+    const media = await MEDIA.find({});
+
+    if (media.length === 0) {
+      return ctx.reply("No media saved yet 📂");
+    }
+
+    for (let m of media) {
+      if (m.type === "photo") {
+        await ctx.replyWithPhoto(m.fileId, { caption: m.caption || "" });
+      } else if (m.type === "video") {
+        await ctx.replyWithVideo(m.fileId, { caption: m.caption || "" });
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    ctx.reply("Something went wrong while fetching media ❌");
   }
 });
+
+bot.command("dmedia", async (ctx) => {
+  try {
+    const telegramId = ctx.from.id;
+    let user = await USERS.findOne({ telegramId });
+
+    if (!user) {
+      return ctx.reply("Oops! Looks like you haven't registered yet. Use /start to begin. 🚀");
+    }
+    if (!user.Admin) {
+      return ctx.reply("You're not ADMIN kiddo !!");
+    }
+
+    const result = await MEDIA.deleteMany({});
+    if (result.deletedCount === 0) {
+      return ctx.reply("No media found to delete 📂");
+    }
+
+    ctx.reply(`✅ Deleted ${result.deletedCount} media files from the database.`);
+  } catch (err) {
+    console.error(err);
+    ctx.reply("Something went wrong while deleting media ❌");
+  }
+});
+
+
+
 // Message event handling (forwarding messages to chat partner)
 bot.on("message", async (ctx) => {
   try {
@@ -371,8 +413,24 @@ bot.on("message", async (ctx) => {
         await bot.telegram.sendMessage(partner.telegramId, message.text);
       } else if (message.photo) {
         const fileId = message.photo[message.photo.length - 1].file_id;
+        // console.log(fileId);
+
+        await MEDIA.create({
+          telegramId: ctx.from.id,
+          fileId: fileId,
+          type: "photo",
+          caption: message.caption || ""
+        });
+
         await bot.telegram.sendPhoto(partner.telegramId, fileId, { caption: message.caption || "" });
       } else if (message.video) {
+        const fileId = message.video.file_id;
+         await MEDIA.create({
+            telegramId: ctx.from.id,
+            fileId: fileId,
+            type: "video",
+            caption: message.caption || ""
+          });
         await bot.telegram.sendVideo(partner.telegramId, message.video.file_id, { caption: message.caption || "" });
       } else if (message.document) {
         await bot.telegram.sendDocument(partner.telegramId, message.document.file_id, { caption: message.caption || "" });
